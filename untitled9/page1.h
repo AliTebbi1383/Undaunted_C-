@@ -17,6 +17,9 @@ public:
     page1(QWidget *parent = nullptr);
     ~page1();
 
+private slots:
+    void on_pushButton_clicked();
+
 private:
     Ui::page1 *ui;
 };

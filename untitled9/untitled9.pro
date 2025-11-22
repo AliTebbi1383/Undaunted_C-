@@ -10,15 +10,24 @@ CONFIG += c++17
 
 SOURCES += \
     main.cpp \
-    page1.cpp
+    page1.cpp \
+    page2.cpp \
+    page3.cpp
 
 HEADERS += \
-    page1.h
+    page1.h \
+    page2.h \
+    page3.h
 
 FORMS += \
-    page1.ui
+    page1.ui \
+    page2.ui \
+    page3.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    image.qrc

@@ -12,3 +12,9 @@ page1::~page1()
 {
     delete ui;
 }
+
+void page1::on_pushButton_clicked()
+{
+
+}
+
