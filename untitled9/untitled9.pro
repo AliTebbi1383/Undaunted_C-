@@ -12,17 +12,17 @@ SOURCES += \
     main.cpp \
     page1.cpp \
     page2.cpp \
-    page3.cpp
+    page4.cpp
 
 HEADERS += \
     page1.h \
     page2.h \
-    page3.h
+    page4.h
 
 FORMS += \
     page1.ui \
     page2.ui \
-    page3.ui
+    page4.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

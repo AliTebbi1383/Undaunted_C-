@@ -1,13 +1,13 @@
 /********************************************************************************
-** Form generated from reading UI file 'page3.ui'
+** Form generated from reading UI file 'page4.ui'
 **
 ** Created by: Qt User Interface Compiler version 6.8.0
 **
 ** WARNING! All changes made in this file will be lost when recompiling UI file!
 ********************************************************************************/
 
-#ifndef UI_PAGE3_H
-#define UI_PAGE3_H
+#ifndef UI_PAGE4_H
+#define UI_PAGE4_H
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
@@ -56,4 +56,4 @@ namespace Ui {
 
 QT_END_NAMESPACE
 
-#endif // UI_PAGE3_H
+#endif // UI_PAGE4_H
