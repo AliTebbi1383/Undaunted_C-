@@ -29,6 +29,7 @@ public:
 private:
     Ui::page4 *ui;
     int tern; // متغیر نگهدارنده نوبت
+    QString filePath_soljer; // مسیر فایل مهره‌ها
 };
 
 #endif // PAGE4_H

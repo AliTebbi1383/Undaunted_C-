@@ -1,9 +1,13 @@
 #include "page4.h"
 #include "ui_page4.h"
+
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
 #include <QDebug>
+#include <QPushButton>
+#include <QRandomGenerator>
+#include <QMap>
 
 page4::page4(const QString &mapName,
              const QString &user1,
@@ -31,15 +35,11 @@ page4::page4(const QString &mapName,
 
     // تنظیم رنگ پس‌زمینه و غیرفعال کردن کلیک‌ها بر اساس نوبت
     if (tern == 0) {
-        // نوبت بازیکن اول
         qDebug() << "Turn: Player 1";
-        // رنگ: Red: 255, Green: 191, Blue: 255
         this->setStyleSheet("QDialog { background-color: rgb(255, 191, 255); color: black; }");
         disableclick(tern);
     } else {
-        // نوبت بازیکن دوم
         qDebug() << "Turn: Player 2";
-        // رنگ: Red: 190, Green: 253, Blue: 187
         this->setStyleSheet("QDialog { background-color: rgb(190, 253, 187); color: black; }");
         disableclick(tern);
     }
@@ -51,7 +51,10 @@ page4::page4(const QString &mapName,
     ui->Username2->setEnabled(false);
     ui->lineEdit->setEnabled(false);
 
-    // --- خواندن فایل و ساخت کارت‌ها (کد اصلی شما بدون هیچ تغییری) ---
+    // --- نگهداری مختصات خانه‌ها برای استفاده در فایل سربازان ---
+    QMap<QString, QPoint> cellCoordinates;
+
+    // --- خواندن فایل نقشه و ساخت کارت‌ها ---
     QFile file(filePath);
     if (!file.exists()) {
         QMessageBox::warning(this, "Error", "File not found: " + filePath);
@@ -72,6 +75,18 @@ page4::page4(const QString &mapName,
         for (const QString &part : parts) {
             QString text = part.trimmed();
             if (text.isEmpty()) continue;
+
+            // --- نکته مهم: حذف عدد بعد از دو نقطه برای تطبیق با فایل سربازان ---
+            // مثال: تبدیل "A16:1" به "A16"
+            QString cellKey = text;
+            if (cellKey.contains(':')) {
+                cellKey = cellKey.split(':').first(); // بخش اول را می‌گیرد
+            }
+            // --------------------------------------------------------------------
+
+            // ذخیره مختصات این خانه با کلید اصلاح شده
+            cellCoordinates[cellKey] = QPoint(x, y);
+
             QLineEdit *lineEdit = new QLineEdit(text, this);
             lineEdit->setFixedSize(70, 55);
             lineEdit->setAlignment(Qt::AlignCenter);
@@ -83,6 +98,92 @@ page4::page4(const QString &mapName,
         rowIndex++;
     }
     file.close();
+    // ---------------------------------------------------------------
+
+    // تعیین مسیر فایل مهره‌ها
+    if (filePath == "C:/Users/Pc/Desktop/d/QT/QT_Proj/map/1.txt") filePath_soljer = "C:/Users/Pc/Desktop/d/QT/QT_Proj/mohre/1.txt";
+    else if (filePath == "C:/Users/Pc/Desktop/d/QT/QT_Proj/map/2.txt") filePath_soljer  = "C:/Users/Pc/Desktop/d/QT/QT_Proj/mohre/2.txt";
+    else if (filePath == "C:/Users/Pc/Desktop/d/QT/QT_Proj/map/3.txt") filePath_soljer  = "C:/Users/Pc/Desktop/d/QT/QT_Proj/mohre/3.txt";
+    else if (filePath == "C:/Users/Pc/Desktop/d/QT/QT_Proj/map/4.txt") filePath_soljer  = "C:/Users/Pc/Desktop/d/QT/QT_Proj/mohre/4.txt";
+    else if (filePath == "C:/Users/Pc/Desktop/d/QT/QT_Proj/map/5.txt") filePath_soljer = "C:/Users/Pc/Desktop/d/QT/QT_Proj/mohre/5.txt";
+
+    // ---------- فایل مهره‌ها ----------
+    QFile fileSol(filePath_soljer);
+    if (fileSol.exists()) {
+        if (fileSol.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QTextStream inSol(&fileSol);
+            int pieceCounter = 0;
+
+            while (!inSol.atEnd()) {
+                QString line = inSol.readLine().trimmed();
+                if (line.isEmpty()) continue;
+
+                // مثال خط: A14:B,Seargeant
+                QStringList mainParts = line.split(",");
+                if (mainParts.size() != 2) continue;
+
+                QString positionPart = mainParts[0]; // A14:B
+                QString typePart     = mainParts[1]; // Seargeant
+
+                // اصلاح شرط: اگر هیچکدام از این‌ها نبود، ادامه بده
+                if (typePart != "Seargeant" && typePart != "Sniper" && typePart != "Scout") {
+                    continue;
+                }
+
+                // نمایش پیام تایید تشخیص سرباز
+                QMessageBox::warning(this, "تشخیص سرباز", "نوع سرباز تشخیص داده شد: " + typePart);
+
+                // جدا کردن A14 و B
+                QStringList posParts = positionPart.split(":");
+                if (posParts.size() != 2) continue;
+
+                QString cell = posParts[0];   // A14
+                QString player = posParts[1]; // A یا B
+
+                // ---------- دریافت مختصات از نقشه ----------
+                QPoint cellPos = cellCoordinates.value(cell);
+                if (cellPos.isNull()) {
+                    qDebug() << "Coordinates not found for cell:" << cell;
+                    QMessageBox::warning(this, "Error", "مختصات برای خانه " + cell + " پیدا نشد!");
+                    continue;
+                }
+                // -----------------------------------------
+
+                // ---------- ساخت دکمه ----------
+                QPushButton *btn = new QPushButton(this);
+                btn->setFixedSize(70, 55);
+                btn->move(cellPos); // استفاده از مختصات ذخیره شده
+
+                // ---------- رنگ بر اساس بازیکن ----------
+                if (player == "A") {
+                    btn->setStyleSheet("background-color:red; border-radius:8px; color: white;");
+                } else if (player == "B") {
+                    btn->setStyleSheet("background-color:blue; border-radius:8px; color: white;");
+                }
+
+                // ---------- متن بر اساس نوع سرباز ----------
+                if (typePart == "Seargeant") {
+                    btn->setText("S");
+                }
+                else if (typePart == "Scout") {
+                    btn->setText("Sc");
+                }
+                else if (typePart == "Sniper") {
+                    btn->setText("Sn");
+                }
+                else {
+                    delete btn;
+                    continue;
+                }
+
+                btn->show();
+                pieceCounter++;
+            }
+            fileSol.close();
+        } else {
+            QMessageBox::warning(this, "Error", "Cannot open soldier file");
+        }
+    }
     // ---------------------------------------------------------------
 
     // تخصیص کارت‌های بازی به کارت‌های موجود در فرم (card1 و card2)
