@@ -1,6 +1,5 @@
 #include "page4.h"
 #include "ui_page4.h"
-
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
@@ -75,31 +74,28 @@ page4::page4(const QString &mapName,
         for (const QString &part : parts) {
             QString text = part.trimmed();
             if (text.isEmpty()) continue;
-
             // --- نکته مهم: حذف عدد بعد از دو نقطه برای تطبیق با فایل سربازان ---
-            // مثال: تبدیل "A16:1" به "A16"
             QString cellKey = text;
             if (cellKey.contains(':')) {
-                cellKey = cellKey.split(':').first(); // بخش اول را می‌گیرد
+                cellKey = cellKey.split(':').first();
             }
-            // --------------------------------------------------------------------
-
             // ذخیره مختصات این خانه با کلید اصلاح شده
             cellCoordinates[cellKey] = QPoint(x, y);
-
             QLineEdit *lineEdit = new QLineEdit(text, this);
             lineEdit->setFixedSize(70, 55);
             lineEdit->setAlignment(Qt::AlignCenter);
             QString bgColor = (rowIndex % 2 == 0) ? "#a8e6cf" : "#81c784";
             lineEdit->setStyleSheet(QString("background-color: %1;").arg(bgColor));
+            // نام‌گذاری آبجکت برای دسترسی آینده
+            lineEdit->setObjectName(cellKey);
             lineEdit->move(x, y);
             x += 71;
         }
         rowIndex++;
     }
     file.close();
-    // ---------------------------------------------------------------
 
+    // ---------------------------------------------------------------
     // تعیین مسیر فایل مهره‌ها
     if (filePath == "C:/Users/Pc/Desktop/d/QT/QT_Proj/map/1.txt") filePath_soljer = "C:/Users/Pc/Desktop/d/QT/QT_Proj/mohre/1.txt";
     else if (filePath == "C:/Users/Pc/Desktop/d/QT/QT_Proj/map/2.txt") filePath_soljer  = "C:/Users/Pc/Desktop/d/QT/QT_Proj/mohre/2.txt";
@@ -123,15 +119,7 @@ page4::page4(const QString &mapName,
                 if (mainParts.size() != 2) continue;
 
                 QString positionPart = mainParts[0]; // A14:B
-                QString typePart     = mainParts[1]; // Seargeant
-
-                // اصلاح شرط: اگر هیچکدام از این‌ها نبود، ادامه بده
-                if (typePart != "Seargeant" && typePart != "Sniper" && typePart != "Scout") {
-                    continue;
-                }
-
-                // نمایش پیام تایید تشخیص سرباز
-                QMessageBox::warning(this, "تشخیص سرباز", "نوع سرباز تشخیص داده شد: " + typePart);
+                QString typePart     = mainParts[1]; // Seargeant, Mark, Control
 
                 // جدا کردن A14 و B
                 QStringList posParts = positionPart.split(":");
@@ -147,18 +135,58 @@ page4::page4(const QString &mapName,
                     QMessageBox::warning(this, "Error", "مختصات برای خانه " + cell + " پیدا نشد!");
                     continue;
                 }
-                // -----------------------------------------
+
+                // --- منطق تصمیم‌گیری بر اساس نوع (Type) ---
+
+                // 1. بررسی وضعیت دیده‌بانی (Mark)
+                if (typePart == "Mark") {
+                    QLineEdit *targetCell = this->findChild<QLineEdit *>(cell);
+                    if (targetCell) {
+                        // رنگ بر اساس بازیکن: A بنفش کم رنگ، B آبی کم رنگ
+                        if (player == "A") {
+                            targetCell->setStyleSheet("background-color: rgba(186, 147, 219, 150); color: black; font-weight: bold;");
+                        } else if (player == "B") {
+                            targetCell->setStyleSheet("background-color: rgba(75, 48, 169, 150); color: white; font-weight: bold;");
+                        }
+                        // اضافه کردن متن M به کنار متن خانه
+                        targetCell->setText(targetCell->text() + "\nM");
+                    }
+                    continue;
+                }
+
+                // 2. بررسی وضعیت کنترل (Control)
+                if (typePart == "Control") {
+                    QLineEdit *targetCell = this->findChild<QLineEdit *>(cell);
+                    if (targetCell) {
+                        // رنگ بر اساس بازیکن: A بنفش کم رنگ، B آبی کم رنگ
+                        if (player == "A") {
+                            targetCell->setStyleSheet("background-color: rgba(186, 147, 219, 150); color: black; font-weight: bold;");
+                        } else if (player == "B") {
+                            targetCell->setStyleSheet("background-color: rgba(75, 48, 169, 150); color: white; font-weight: bold;");
+                        }
+                        // اضافه کردن متن Con به کنار متن خانه
+                        targetCell->setText(targetCell->text() + "\nCon");
+                    }
+                    continue;
+                }
+
+                // 3. ساخت مهره‌ها (Sergeant, Sniper, Scout)
+                if (typePart != "Seargeant" && typePart != "Sniper" && typePart != "Scout") {
+                    continue;
+                }
 
                 // ---------- ساخت دکمه ----------
                 QPushButton *btn = new QPushButton(this);
-                btn->setFixedSize(70, 55);
-                btn->move(cellPos); // استفاده از مختصات ذخیره شده
+                btn->setFixedSize(50, 40);
+                btn->move(cellPos);
 
-                // ---------- رنگ بر اساس بازیکن ----------
+                // ---------- رنگ بر اساس بازیکن (پررنگ) ----------
                 if (player == "A") {
-                    btn->setStyleSheet("background-color:red; border-radius:8px; color: white;");
+                    // بنفش پررنگ برای بازیکن A
+                    btn->setStyleSheet("background-color: rgb(128, 0, 128); border-radius:8px; color: white;");
                 } else if (player == "B") {
-                    btn->setStyleSheet("background-color:blue; border-radius:8px; color: white;");
+                    // آبی پررنگ برای بازیکن B
+                    btn->setStyleSheet("background-color: rgb(0, 0, 255); border-radius:8px; color: white;");
                 }
 
                 // ---------- متن بر اساس نوع سرباز ----------
@@ -170,10 +198,6 @@ page4::page4(const QString &mapName,
                 }
                 else if (typePart == "Sniper") {
                     btn->setText("Sn");
-                }
-                else {
-                    delete btn;
-                    continue;
                 }
 
                 btn->show();
@@ -197,7 +221,6 @@ page4::~page4()
 
 int page4::randomtern()
 {
-    // تولید عدد تصادفی ۰ یا ۱
     return QRandomGenerator::global()->bounded(2);
 }
 
@@ -206,22 +229,22 @@ void page4::disableclick(int tern)
     // اگر نوبت بازیکن ۱ است (tern == 0)، کارت‌های بازیکن ۲ را غیرفعال کن
     if (tern == 0) {
         for (int i = 1; i <= 10; i++) {
-            QLineEdit *card = this->findChild<QLineEdit*>(QString("card2_%1").arg(i));
+            QLineEdit *card = this->findChild<QLineEdit *>(QString("card2_%1").arg(i));
             if (card) card->setEnabled(false);
 
             // اطمینان از فعال بودن کارت‌های بازیکن ۱
-            QLineEdit *card1 = this->findChild<QLineEdit*>(QString("card1_%1").arg(i));
+            QLineEdit *card1 = this->findChild<QLineEdit *>(QString("card1_%1").arg(i));
             if (card1) card1->setEnabled(true);
         }
     }
     // اگر نوبت بازیکن ۲ است (tern == 1)، کارت‌های بازیکن ۱ را غیرفعال کن
     else {
         for (int i = 1; i <= 10; i++) {
-            QLineEdit *card = this->findChild<QLineEdit*>(QString("card1_%1").arg(i));
+            QLineEdit *card = this->findChild<QLineEdit *>(QString("card1_%1").arg(i));
             if (card) card->setEnabled(false);
 
             // اطمینان از فعال بودن کارت‌های بازیکن ۲
-            QLineEdit *card2 = this->findChild<QLineEdit*>(QString("card2_%1").arg(i));
+            QLineEdit *card2 = this->findChild<QLineEdit *>(QString("card2_%1").arg(i));
             if (card2) card2->setEnabled(true);
         }
     }
@@ -235,10 +258,9 @@ void page4::assignRandomCards()
     int count_Sergeant = 3;
 
     for (int i = 1; i <= 10; i++) {
-        int randType = QRandomGenerator::global()->bounded(1, 4); // عدد تصادفی بین ۱ تا ۳
-
+        int randType = QRandomGenerator::global()->bounded(1, 4);
         QString cardName = QString("card1_%1").arg(i);
-        QLineEdit *card = this->findChild<QLineEdit*>(cardName);
+        QLineEdit *card = this->findChild<QLineEdit *>(cardName);
         if (!card) continue;
 
         if (randType == 1 && count_Scout > 0) {
@@ -271,10 +293,9 @@ void page4::assignRandomCards()
     count_Sergeant = 3;
 
     for (int i = 1; i <= 10; i++) {
-        int randType = QRandomGenerator::global()->bounded(1, 4); // عدد تصادفی بین ۱ تا ۳
-
+        int randType = QRandomGenerator::global()->bounded(1, 4);
         QString cardName = QString("card2_%1").arg(i);
-        QLineEdit *card = this->findChild<QLineEdit*>(cardName);
+        QLineEdit *card = this->findChild<QLineEdit *>(cardName);
         if (!card) continue;
 
         if (randType == 1 && count_Scout > 0) {
