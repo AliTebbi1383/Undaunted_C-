@@ -2,8 +2,11 @@
 #define PAGE4_H
 
 #include <QDialog>
-#include <QLineEdit>
-#include <QRandomGenerator>
+#include <QVector>
+#include <QStringList>
+#include <QMap>
+#include <QPoint>
+#include "agent.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class page4; }
@@ -21,15 +24,31 @@ public:
                    QWidget *parent = nullptr);
     ~page4();
 
-    // متدهای مورد نیاز
     int randomtern();
     void disableclick(int tern);
     void assignRandomCards();
 
+    // متدهای کمکی برای منطق بازی
+    QStringList getNeighbors(const QString &cellId);
+    void updateCellVisuals(const QString &cellId);
+void updateTurnVisuals();
 private:
     Ui::page4 *ui;
-    int tern; // متغیر نگهدارنده نوبت
-    QString filePath_soljer; // مسیر فایل مهره‌ها
+
+    int tern;
+    QString filePath_soljer;
+
+    QVector<Agent*> agentsList;
+
+    // لیست خانه‌های دیده‌بانی شده توسط هر بازیکن
+    QStringList visibleCellsA;
+    QStringList visibleCellsB;
+
+    // نقشه‌ی مختصات خانه‌ها برای پیدا کردن موقعیت دکمه‌ها
+    QMap<QString, QPoint> cellCoordinates;
+
+    // لیست خانه‌های تحت کنترل هر بازیکن
+    QMap<QString, Owner> controlledCells;
 };
 
 #endif // PAGE4_H
