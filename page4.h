@@ -28,10 +28,20 @@ public:
     void disableclick(int tern);
     void assignRandomCards();
 
+    // --- توابع جدید برای مدیریت کارت‌ها ---
+    void updateCardsUI();
+    void handleCardClick(Owner player); // ایندکس حذف شد چون همیشه کارت اول است
+
     // متدهای کمکی برای منطق بازی
     QStringList getNeighbors(const QString &cellId);
     void updateCellVisuals(const QString &cellId);
-void updateTurnVisuals();
+    void updateTurnVisuals();
+
+private slots:
+    // --- اسلات‌های کلیک فقط برای کارت اول هر بازیکن ---
+    void on_card1_1_clicked();
+    void on_card2_1_clicked();
+
 private:
     Ui::page4 *ui;
 
@@ -49,6 +59,10 @@ private:
 
     // لیست خانه‌های تحت کنترل هر بازیکن
     QMap<QString, Owner> controlledCells;
+
+    // --- لیست‌های جدید برای نگهداری کارت‌ها ---
+    QStringList cardsPlayer1;
+    QStringList cardsPlayer2;
 };
 
 #endif // PAGE4_H
